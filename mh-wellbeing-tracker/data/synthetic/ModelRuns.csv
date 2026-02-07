@@ -1,3 +1,0 @@
-ModelName,Version,Accuracy,F1Score,TrainedOn,Notes
-SentimentBaseline,v1.0,0.805,0.815,2025-08-25 15:31:19,Synthetic training; offline metrics only
-MoodPredictorV1,v2.0,0.839,0.712,2025-10-04 15:31:19,Synthetic training; offline metrics only
