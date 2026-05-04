@@ -1,56 +1,56 @@
 # Mental Health & Wellbeing Tracker
 
-A full-stack wellbeing tracking application built for my final year Computer Science project.
+A full-stack wellbeing tracking system developed as my final year Computer Science project.
 
-## Project Overview
+## 🚀 Overview
+This application allows users to track their mental health through mood, sleep, activity, and journaling data. The system provides insights, recommendations, and alerts based on user behaviour.
 
-This system allows users to track mood, sleep, activity, and journal entries. It uses a backend API, SQL Server database, and frontend pages to provide wellbeing insights, recommendations, and alerts.
+## 🧱 Architecture
+Frontend → Backend API → SQL Server Database
 
-## Tech Stack
+- Frontend: Handles user interaction (HTML, CSS, JS)
+- Backend: Node.js & Express API
+- Database: SQL Server storing structured wellbeing data
 
+## 🔧 Tech Stack
 - Node.js
 - Express.js
 - SQL Server
-- HTML
-- CSS
-- JavaScript
+- HTML, CSS, JavaScript
 - JWT Authentication
-- Git and GitHub
+- Postman (API Testing)
+- Git & GitHub
 
-## Main Features
-
-- User signup and login
-- JWT-based authentication
-- Mood tracking
-- Sleep tracking
+## ⚙️ Features
+- User authentication (JWT login/signup)
+- Mood tracking system
+- Sleep logging
 - Activity tracking
 - Journal entries
-- Dashboard summary
-- Recommendations and alerts
-- SQL Server relational database
-- REST API tested using Postman
+- Dashboard with insights
+- Rule-based recommendations
+- Alerts based on user behaviour
+- RESTful API design
 
-## Software Engineering Skills Demonstrated
-
-- Full-stack application development
-- REST API design
-- Database design and implementation
-- Authentication and security
+## 💡 Software Engineering Concepts Demonstrated
+- Full-stack development
+- REST API design and implementation
+- Database design (relational modelling)
+- Authentication and security (JWT)
 - CRUD operations
-- Modular project structure
-- API testing
-- Version control using Git and GitHub
+- Modular code structure
+- API testing and debugging
+- Version control with Git
 
-## Future Improvements
+## 📸 Screenshots (to be added)
+- UI pages
+- Postman API testing
+- Database tables
 
-- Improve UI design
-- Add more advanced machine learning features
-- Deploy the application online
-- Add automated testing
-- Improve accessibility and responsiveness
+## 🚀 How to Run
 
-## Author
-
-Ali Rehman
-BSc Computer Science  
-University of Derby
+1. Navigate to backend:
+```bash
+cd backend
+npm install
+node server.js
