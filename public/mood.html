@@ -1,0 +1,122 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Mood | MH Wellbeing Tracker</title>
+  <link rel="stylesheet" href="/assets/css/styles.css"/>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <div class="nav">
+    <div class="nav-inner">
+      <div class="brand"><span>MH Wellbeing Tracker</span><span class="badge">Mood</span></div>
+      <div class="nav-links">
+        <a class="link" href="/dashboard.html">Dashboard</a>
+        <a class="link" href="/mood.html">Mood</a>
+        <a class="link" href="/sleep.html">Sleep</a>
+        <a class="link" href="/journal.html">Journal</a>
+        <a class="link" href="/activity.html">Activity</a>
+        <a class="link" href="/insights.html">Insights</a>
+      </div>
+      <button class="btn" id="logoutBtn">Logout</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="grid grid-2">
+      <!-- FORM CARD -->
+      <div class="card">
+        <h2>Log your mood</h2>
+        <p class="muted">Score 1–10. Optional note to describe how you feel.</p>
+        <hr/>
+
+        <form class="form" id="moodForm">
+          <div class="field">
+            <label>Mood score (1–10)</label>
+            <input id="moodScore" type="number" min="1" max="10" required />
+          </div>
+
+          <div class="field">
+            <label>Note (optional)</label>
+            <input id="note" type="text" maxlength="500" placeholder="e.g., stressed but productive" />
+          </div>
+
+          <button class="btn primary" type="submit">Save mood</button>
+        </form>
+      </div>
+
+      <!-- TABLE CARD -->
+      <div class="card">
+        <h2>Recent mood logs</h2>
+        <p class="muted">Shows your latest entries.</p>
+        <hr/>
+
+        <div style="overflow:auto">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Score</th>
+                <th>Note</th>
+              </tr>
+            </thead>
+            <tbody id="moodRows"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { api } from "/assets/js/api.js";
+    import { clearToken, requireLogin } from "/assets/js/auth.js";
+    import { fmtDate, toast } from "/assets/js/ui.js";
+
+    requireLogin();
+
+    document.getElementById("logoutBtn").onclick = () => {
+      clearToken();
+      window.location.href = "/login.html";
+    };
+
+    async function renderMood() {
+      const rows = await api.moodList();
+      const body = document.getElementById("moodRows");
+
+      if (!rows.length) {
+        body.innerHTML = `<tr><td colspan="3" class="muted">No mood logs yet.</td></tr>`;
+        return;
+      }
+
+      body.innerHTML = rows.map(r => `
+        <tr>
+          <td>${fmtDate(r.LoggedAt)}</td>
+          <td>${r.MoodScore}</td>
+          <td>${r.Note ?? ""}</td>
+        </tr>
+      `).join("");
+    }
+
+    document.getElementById("moodForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const moodScore = Number(document.getElementById("moodScore").value);
+      const note = document.getElementById("note").value.trim();
+
+      try {
+        await api.moodCreate({ moodScore, note });
+        toast("Mood saved ✅");
+        document.getElementById("moodForm").reset();
+        await renderMood();
+      } catch (err) {
+        toast(err.message, "err");
+        alert("Error: " + err.message);
+      }
+    });
+
+    renderMood().catch(err => toast(err.message, "err"));
+  </script>
+</body>
+</html>

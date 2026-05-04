@@ -1,0 +1,81 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Dashboard | MH Wellbeing Tracker</title>
+  <link rel="stylesheet" href="/assets/css/styles.css"/>
+</head>
+<body>
+
+  <div class="nav">
+    <div class="nav-inner">
+      <div class="brand"><span>MH Wellbeing Tracker</span><span class="badge">Dashboard</span></div>
+      <div class="nav-links">
+        <a class="link" href="/dashboard.html">Dashboard</a>
+        <a class="link" href="/mood.html">Mood</a>
+        <a class="link" href="/sleep.html">Sleep</a>
+        <a class="link" href="/journal.html">Journal</a>
+        <a class="link" href="/activity.html">Activity</a>
+        <a class="link" href="/insights.html">Insights</a>
+      </div>
+      <button class="btn" id="logoutBtn">Logout</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="grid grid-3">
+      <div class="card"><div class="muted">Mood logs</div><div class="kpi" id="moodCount">—</div></div>
+      <div class="card"><div class="muted">Sleep logs</div><div class="kpi" id="sleepCount">—</div></div>
+      <div class="card"><div class="muted">Journal entries</div><div class="kpi" id="journalCount">—</div></div>
+    </div>
+
+    <div style="height:16px"></div>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <h2>Latest mood</h2>
+        <p class="muted" id="latestMood">—</p>
+      </div>
+      <div class="card">
+        <h2>Latest sleep</h2>
+        <p class="muted" id="latestSleep">—</p>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { api } from "/assets/js/api.js";
+    import { clearToken, requireLogin } from "/assets/js/auth.js";
+    import { fmtDate, toast } from "/assets/js/ui.js";
+
+    requireLogin();
+    document.getElementById("logoutBtn").onclick = () => { clearToken(); window.location.href="/login.html"; };
+
+    async function load(){
+      try{
+        const [moods, sleeps, journals] = await Promise.all([
+          api.moodList(),
+          api.sleepList(),
+          api.journalList()
+        ]);
+
+        document.getElementById("moodCount").textContent = moods.length;
+        document.getElementById("sleepCount").textContent = sleeps.length;
+        document.getElementById("journalCount").textContent = journals.length;
+
+        const m = moods[0];
+        document.getElementById("latestMood").textContent =
+          m ? `Score: ${m.MoodScore} • ${m.Note ?? ""} • ${fmtDate(m.LoggedAt)}` : "No mood logs yet.";
+
+        const s = sleeps[0];
+        document.getElementById("latestSleep").textContent =
+          s ? `${s.SleepHours ?? "—"} hours • ${s.SleepQuality ?? ""} • ${fmtDate(s.LoggedAt)}` : "No sleep logs yet.";
+      } catch(err){
+        toast(err.message, "err");
+      }
+    }
+    load();
+  </script>
+</body>
+</html>

@@ -1,0 +1,163 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Journal | MH Wellbeing Tracker</title>
+  <link rel="stylesheet" href="/assets/css/styles.css"/>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <div class="nav">
+    <div class="nav-inner">
+      <div class="brand"><span>MH Wellbeing Tracker</span><span class="badge">Journal</span></div>
+      <div class="nav-links">
+        <a class="link" href="/dashboard.html">Dashboard</a>
+        <a class="link" href="/mood.html">Mood</a>
+        <a class="link" href="/sleep.html">Sleep</a>
+        <a class="link" href="/journal.html">Journal</a>
+        <a class="link" href="/activity.html">Activity</a>
+        <a class="link" href="/insights.html">Insights</a>
+      </div>
+      <button class="btn" id="logoutBtn">Logout</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="grid grid-2">
+
+      <!-- FORM CARD -->
+      <div class="card">
+        <h2>Write a journal entry</h2>
+        <p class="muted">Write freely. </p>
+        <hr/>
+
+        <form class="form" id="journalForm">
+          <div class="field">
+            <label>Entry text</label>
+            <textarea id="entryText" placeholder="How are you feeling today? What happened?" maxlength="5000" required></textarea>
+          </div>
+
+          <div class="grid grid-2">
+            <div class="field">
+              <label>Sentiment score (optional)</label>
+              <input id="sentimentScore" type="number" step="0.01" placeholder="e.g. 0.25" />
+            </div>
+
+            <div class="field">
+              <label>Sentiment label (optional)</label>
+              <select id="sentimentLabel">
+                <option value="">Select</option>
+                <option value="Negative">Negative</option>
+                <option value="Mixed">Mixed</option>
+                <option value="Neutral">Neutral</option>
+                <option value="Positive">Positive</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Detected categories (optional)</label>
+            <input id="detectedCategories" type="text" placeholder="e.g. stress, resilience" maxlength="255" />
+          </div>
+
+          <button class="btn primary" type="submit">Save entry</button>
+        </form>
+
+        <p class="muted" style="margin-top:10px;">
+          
+        </p>
+      </div>
+
+      <!-- TABLE CARD -->
+      <div class="card">
+        <h2>Recent journal entries</h2>
+        <p class="muted">Your latest entries (trimmed preview).</p>
+        <hr/>
+
+        <div style="overflow:auto">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Preview</th>
+                <th>Sentiment</th>
+                <th>Categories</th>
+              </tr>
+            </thead>
+            <tbody id="journalRows"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script type="module">
+    import { api } from "/assets/js/api.js";
+    import { clearToken, requireLogin } from "/assets/js/auth.js";
+    import { fmtDate, toast } from "/assets/js/ui.js";
+
+    requireLogin();
+
+    document.getElementById("logoutBtn").onclick = () => {
+      clearToken();
+      window.location.href = "/login.html";
+    };
+
+    function previewText(t) {
+      if (!t) return "";
+      return t.length > 70 ? t.slice(0, 70) + "..." : t;
+    }
+
+    async function renderJournal() {
+      const rows = await api.journalList();
+      const body = document.getElementById("journalRows");
+
+      if (!rows.length) {
+        body.innerHTML = `<tr><td colspan="4" class="muted">No journal entries yet.</td></tr>`;
+        return;
+      }
+
+      body.innerHTML = rows.map(r => `
+        <tr>
+          <td>${fmtDate(r.LoggedAt)}</td>
+          <td>${previewText(r.EntryText)}</td>
+          <td>${(r.SentimentLabel ?? "")} ${r.SentimentScore != null ? `(${r.SentimentScore})` : ""}</td>
+          <td>${r.DetectedCategories ?? ""}</td>
+        </tr>
+      `).join("");
+    }
+
+    document.getElementById("journalForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const entryText = document.getElementById("entryText").value.trim();
+      const sentimentScoreRaw = document.getElementById("sentimentScore").value.trim();
+      const sentimentScore = sentimentScoreRaw === "" ? null : Number(sentimentScoreRaw);
+
+      const sentimentLabel = document.getElementById("sentimentLabel").value || null;
+      const detectedCategories = document.getElementById("detectedCategories").value.trim() || null;
+
+      try {
+        await api.journalCreate({
+          entryText,
+          sentimentScore,
+          sentimentLabel,
+          detectedCategories
+        });
+
+        toast("Journal entry saved ✅");
+        document.getElementById("journalForm").reset();
+        await renderJournal();
+      } catch (err) {
+        toast(err.message, "err");
+        alert("Error: " + err.message);
+      }
+    });
+
+    renderJournal().catch(err => toast(err.message, "err"));
+  </script>
+</body>
+</html>

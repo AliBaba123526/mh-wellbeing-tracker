@@ -1,0 +1,79 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Login | MH Wellbeing Tracker</title>
+  <link rel="stylesheet" href="/assets/css/styles.css"/>
+</head>
+<body>
+  <div class="container">
+    <div class="grid grid-2">
+      <div class="card">
+        <h2>Welcome back</h2>
+        <p class="muted">Login to access your wellbeing dashboard.</p>
+        <hr/>
+        <form class="form" id="loginForm">
+          <div class="field">
+            <label>Email</label>
+            <input id="email" type="email" placeholder="you@example.com" required />
+          </div>
+          <div class="field">
+            <label>Password</label>
+            <input id="password" type="password" placeholder="••••••••" required />
+          </div>
+          <button class="btn primary" type="submit">Login</button>
+          <p class="muted">
+            No account? <a class="link" href="/signup.html">Create one</a>
+          </p>
+
+        </form>
+        
+      </div>
+
+      <div class="card">
+        <h2>MH Wellbeing Tracker</h2>
+        <p class="muted">Track mood, sleep, journaling and activity. View insights and alerts.</p>
+        <div class="row">
+          <span class="pill">JWT</span>
+          <span class="pill">SQL Server</span>
+          <span class="pill">Express API</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+  console.log("login.js loaded ✅");
+
+  import { api } from "/assets/js/api.js";
+  import { setToken } from "/assets/js/auth.js";
+  import { toast } from "/assets/js/ui.js";
+
+  document.getElementById("loginForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value;
+
+    console.log("Trying login for:", email);
+
+    try {
+      const data = await api.login({ email, password });
+      console.log("Login response:", data);
+
+      if (!data?.token) throw new Error("Login response missing token");
+      setToken(data.token);
+
+      toast("Logged in ✅");
+      window.location.href = "/dashboard.html";
+    } catch (err) {
+      console.error("Login failed:", err);
+      toast(err.message, "err");
+      alert("Login failed: " + err.message); // temporary - remove later
+    }
+  });
+</script>
+
+</body>
+</html>

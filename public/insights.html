@@ -1,0 +1,247 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Insights | MH Wellbeing Tracker</title>
+  <link rel="stylesheet" href="/assets/css/styles.css"/>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <div class="nav">
+    <div class="nav-inner">
+      <div class="brand"><span>MH Wellbeing Tracker</span><span class="badge">Insights</span></div>
+      <div class="nav-links">
+        <a class="link" href="/dashboard.html">Dashboard</a>
+        <a class="link" href="/mood.html">Mood</a>
+        <a class="link" href="/sleep.html">Sleep</a>
+        <a class="link" href="/journal.html">Journal</a>
+        <a class="link" href="/activity.html">Activity</a>
+        <a class="link" href="/insights.html">Insights</a>
+      </div>
+      <button class="btn" id="logoutBtn">Logout</button>
+    </div>
+  </div>
+
+  <div class="container">
+
+    <div class="grid grid-2">
+      <!-- RECOMMENDATIONS -->
+      <div class="card">
+        <div class="row" style="justify-content:space-between;">
+          <h2 style="margin:0;">Recommendations</h2>
+          <button class="btn" id="generateInsightsBtn" type="button">Generate insights</button>
+        </div>
+        <p class="muted">These are suggestions based on your recent logs </p>
+        <hr/>
+
+        <div style="overflow:auto">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Created</th>
+                <th>Recommendation</th>
+                <th>By</th>
+                <th>Status</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="recRows"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ALERTS -->
+      <div class="card">
+        <div class="row" style="justify-content:space-between;">
+          <h2 style="margin:0;">Alerts</h2>
+          <span class="pill">Safety / reminders</span>
+        </div>
+        <p class="muted">Alerts can be acknowledged to mark them as handled.</p>
+        <hr/>
+
+        <div style="overflow:auto">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Created</th>
+                <th>Type</th>
+                <th>Message</th>
+                <th>Status</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="alertRows"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div style="height:16px"></div>
+
+    <!-- MODEL RUNS -->
+    <div class="card">
+      <div class="row" style="justify-content:space-between;">
+        <h2 style="margin:0;">Model runs</h2>
+        <span class="pill">Step 5 (ML/AI)</span>
+      </div>
+      <p class="muted">
+        This logs when an AI/ML model was trained or executed. 
+      </p>
+      <hr/>
+
+      <div style="overflow:auto">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Trained on</th>
+              <th>Model</th>
+              <th>Version</th>
+              <th>Accuracy</th>
+              <th>F1</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody id="modelRows"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <script type="module">
+    import { api } from "/assets/js/api.js";
+    import { clearToken, requireLogin } from "/assets/js/auth.js";
+    import { fmtDate, toast } from "/assets/js/ui.js";
+
+    requireLogin();
+
+    document.getElementById("logoutBtn").onclick = () => {
+      clearToken();
+      window.location.href = "/login.html";
+    };
+
+    function yesNo(v) {
+      if (v === true) return "Yes";
+      if (v === false) return "No";
+      return "";
+    }
+
+    async function renderRecommendations() {
+      const rows = await api.recList();
+      const body = document.getElementById("recRows");
+
+      if (!rows.length) {
+        body.innerHTML = `<tr><td colspan="5" class="muted">No recommendations yet.</td></tr>`;
+        return;
+      }
+
+      body.innerHTML = rows.map(r => `
+        <tr>
+          <td>${fmtDate(r.CreatedAt)}</td>
+          <td>${r.RecommendationText ?? ""}</td>
+          <td>${r.GeneratedBy ?? ""}</td>
+          <td>${r.Accepted ? "Accepted" : "Pending"}</td>
+          <td>
+            ${r.Accepted ? "" : `<button class="btn success" data-accept="${r.RecID}">Accept</button>`}
+          </td>
+        </tr>
+      `).join("");
+
+      body.querySelectorAll("[data-accept]").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          const id = btn.getAttribute("data-accept");
+          try {
+            await api.recAccept(id);
+            toast("Recommendation accepted ✅");
+            await renderRecommendations();
+          } catch (err) {
+            toast(err.message, "err");
+            alert("Error: " + err.message);
+          }
+        });
+      });
+    }
+
+    async function renderAlerts() {
+      const rows = await api.alertList();
+      const body = document.getElementById("alertRows");
+
+      if (!rows.length) {
+        body.innerHTML = `<tr><td colspan="5" class="muted">No alerts yet.</td></tr>`;
+        return;
+      }
+
+      body.innerHTML = rows.map(a => `
+        <tr>
+          <td>${fmtDate(a.CreatedAt)}</td>
+          <td>${a.AlertType ?? ""}</td>
+          <td>${a.AlertMessage ?? ""}</td>
+          <td>${a.Acknowledged ? "Acknowledged" : "Active"}</td>
+          <td>
+            ${a.Acknowledged ? "" : `<button class="btn" data-ack="${a.AlertID}">Acknowledge</button>`}
+          </td>
+        </tr>
+      `).join("");
+
+      body.querySelectorAll("[data-ack]").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          const id = btn.getAttribute("data-ack");
+          try {
+            await api.alertAck(id);
+            toast("Alert acknowledged ✅");
+            await renderAlerts();
+          } catch (err) {
+            toast(err.message, "err");
+            alert("Error: " + err.message);
+          }
+        });
+      });
+    }
+
+    async function renderModelRuns() {
+      const rows = await api.modelRunsList();
+      const body = document.getElementById("modelRows");
+
+      if (!rows.length) {
+        body.innerHTML = `<tr><td colspan="6" class="muted">No model runs logged yet (Step 5).</td></tr>`;
+        return;
+      }
+
+      body.innerHTML = rows.map(m => `
+        <tr>
+          <td>${fmtDate(m.TrainedOn)}</td>
+          <td>${m.ModelName ?? ""}</td>
+          <td>${m.Version ?? ""}</td>
+          <td>${m.Accuracy ?? ""}</td>
+          <td>${m.F1Score ?? ""}</td>
+          <td>${m.Notes ?? ""}</td>
+        </tr>
+      `).join("");
+    }
+
+    async function refreshInsights() {
+  await Promise.all([
+    renderRecommendations(),
+    renderAlerts(),
+    renderModelRuns()
+  ]);
+}
+
+document.getElementById("generateInsightsBtn").addEventListener("click", async () => {
+  try {
+    await api.runInsights();
+    toast("Insights generated successfully ");
+    await refreshInsights();
+  } catch (err) {
+    toast(err.message || "Failed to generate insights", "err");
+    alert("Error: " + (err.message || "Failed to generate insights"));
+  }
+});
+
+// initial load
+refreshInsights().catch(err => toast(err.message, "err"));
+  </script>
+</body>
+</html>

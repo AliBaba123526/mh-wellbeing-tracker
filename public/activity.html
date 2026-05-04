@@ -1,0 +1,124 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Activity | MH Wellbeing Tracker</title>
+  <link rel="stylesheet" href="/assets/css/styles.css"/>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <div class="nav">
+    <div class="nav-inner">
+      <div class="brand"><span>MH Wellbeing Tracker</span><span class="badge">Activity</span></div>
+      <div class="nav-links">
+        <a class="link" href="/dashboard.html">Dashboard</a>
+        <a class="link" href="/mood.html">Mood</a>
+        <a class="link" href="/sleep.html">Sleep</a>
+        <a class="link" href="/journal.html">Journal</a>
+        <a class="link" href="/activity.html">Activity</a>
+        <a class="link" href="/insights.html">Insights</a>
+      </div>
+      <button class="btn" id="logoutBtn">Logout</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="grid grid-2">
+
+      <!-- FORM CARD -->
+      <div class="card">
+        <h2>Log an activity</h2>
+        <p class="muted">Track what you did and how long it took.</p>
+        <hr/>
+
+        <form class="form" id="activityForm">
+          <div class="field">
+            <label>Activity type</label>
+            <input id="activityType" type="text" maxlength="100" placeholder="e.g., Walk, Gym, Study" required />
+          </div>
+
+          <div class="field">
+            <label>Duration (minutes)</label>
+            <input id="durationMinutes" type="number" min="1" max="10000" placeholder="e.g., 30" required />
+          </div>
+
+          <button class="btn primary" type="submit">Save activity</button>
+        </form>
+      </div>
+
+      <!-- TABLE CARD -->
+      <div class="card">
+        <h2>Recent activities</h2>
+        <p class="muted">Your latest activity logs.</p>
+        <hr/>
+
+        <div style="overflow:auto">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Type</th>
+                <th>Minutes</th>
+              </tr>
+            </thead>
+            <tbody id="activityRows"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script type="module">
+    import { api } from "/assets/js/api.js";
+    import { clearToken, requireLogin } from "/assets/js/auth.js";
+    import { fmtDate, toast } from "/assets/js/ui.js";
+
+    requireLogin();
+
+    document.getElementById("logoutBtn").onclick = () => {
+      clearToken();
+      window.location.href = "/login.html";
+    };
+
+    async function renderActivity() {
+      const rows = await api.activityList();
+      const body = document.getElementById("activityRows");
+
+      if (!rows.length) {
+        body.innerHTML = `<tr><td colspan="3" class="muted">No activity logs yet.</td></tr>`;
+        return;
+      }
+
+      body.innerHTML = rows.map(r => `
+        <tr>
+          <td>${fmtDate(r.LoggedAt)}</td>
+          <td>${r.ActivityType ?? ""}</td>
+          <td>${r.DurationMinutes ?? ""}</td>
+        </tr>
+      `).join("");
+    }
+
+    document.getElementById("activityForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const activityType = document.getElementById("activityType").value.trim();
+      const durationMinutes = Number(document.getElementById("durationMinutes").value);
+
+      try {
+        await api.activityCreate({ activityType, durationMinutes });
+        toast("Activity saved ✅");
+        document.getElementById("activityForm").reset();
+        await renderActivity();
+      } catch (err) {
+        toast(err.message, "err");
+        alert("Error: " + err.message);
+      }
+    });
+
+    renderActivity().catch(err => toast(err.message, "err"));
+  </script>
+</body>
+</html>
