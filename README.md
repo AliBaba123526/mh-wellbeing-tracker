@@ -1,33 +1,56 @@
-# mh-wellbeing-tracker
-Final Year Project – Mental Health &amp; Wellbeing Tracker
-🧠 Mental Health & Wellbeing Tracker
+# Mental Health & Wellbeing Tracker
 
-A data-driven system that applies **data science and machine learning** techniques to track and analyse mental health patterns.  
-Developed as part of my **Final Year Project at the University of Derby**.
+A full-stack wellbeing tracking application built for my final year Computer Science project.
 
-## 🔍 Overview
-- Collects and stores user data using a **relational SQL database**
-- Performs **sentiment analysis** on journal entries using Python
-- Applies **predictive analytics** to forecast future mood trends
-- Displays insights through **data visualisation dashboards**
+## Project Overview
 
-## 🛠️ Technologies Used
-- Python (Pandas, NumPy, Scikit-learn, Matplotlib)
-- SQL (MySQL)
-- Power BI / Tableau
-- REST APIs
+This system allows users to track mood, sleep, activity, and journal entries. It uses a backend API, SQL Server database, and frontend pages to provide wellbeing insights, recommendations, and alerts.
 
-## 📊 Key Features
-- Data cleaning and preprocessing pipeline
-- Machine learning mood prediction model
-- Sentiment analysis for text inputs
-- Dashboard visualisations for wellbeing trends
+## Tech Stack
 
-## 🚀 Future Improvements
-- Add real-time tracking and mobile integration
-- Enhance model with deep learning and NLP
+- Node.js
+- Express.js
+- SQL Server
+- HTML
+- CSS
+- JavaScript
+- JWT Authentication
+- Git and GitHub
 
-## 👨‍💻 Author
-**Ali Rehman**  
-Final-Year BSc (Hons) Computer Science Student, University of Derby  
-📧 alirehmaan332@gmail.com 
+## Main Features
+
+- User signup and login
+- JWT-based authentication
+- Mood tracking
+- Sleep tracking
+- Activity tracking
+- Journal entries
+- Dashboard summary
+- Recommendations and alerts
+- SQL Server relational database
+- REST API tested using Postman
+
+## Software Engineering Skills Demonstrated
+
+- Full-stack application development
+- REST API design
+- Database design and implementation
+- Authentication and security
+- CRUD operations
+- Modular project structure
+- API testing
+- Version control using Git and GitHub
+
+## Future Improvements
+
+- Improve UI design
+- Add more advanced machine learning features
+- Deploy the application online
+- Add automated testing
+- Improve accessibility and responsiveness
+
+## Author
+
+Ali Rehman
+BSc Computer Science  
+University of Derby
