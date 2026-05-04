@@ -54,3 +54,6 @@ Frontend → Backend API → SQL Server Database
 cd backend
 npm install
 node server.js
+## 📄 Documentation
+
+- Full Dissertation: [View Project Report and screenshots evidence](docs/100690479-Dissertation.docx)
